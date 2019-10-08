@@ -11,10 +11,12 @@ namespace AdvertApi.Services
     public class DynamoDbAdvertStorage : IAdvertStorageService
     {
         private readonly IMapper _mapper;
+        private readonly IAmazonDynamoDB _client;
 
-        public DynamoDbAdvertStorage(IMapper mapper)
+        public DynamoDbAdvertStorage(IMapper mapper, IAmazonDynamoDB client)
         {
             _mapper = mapper;
+            _client = client;
         }
 
         public async Task<string> Add(AdvertModel model)
@@ -33,19 +35,16 @@ namespace AdvertApi.Services
 
         public async Task Confirm(ConfirmAdvertModel model)
         {
-            using (var client = new AmazonDynamoDBClient())
+            using (var ctx = new DynamoDBContext(_client))
             {
-                using (var ctx = new DynamoDBContext(client))
-                {
-                    var record = await ctx.LoadAsync<AdvertDbModel>(model.Id);
-                    if (record == null)
-                        throw new KeyNotFoundException($"A record with Id={model.Id} was not found.");
+                var record = await ctx.LoadAsync<AdvertDbModel>(model.Id);
+                if (record == null)
+                    throw new KeyNotFoundException($"A record with Id={model.Id} was not found.");
 
-                    if (model.Status == AdvertStatus.Active)
-                        await UpdateAdvertAsActive(ctx, record);
-                    else
-                        await DeleteAdvert(ctx, record);
-                }
+                if (model.Status == AdvertStatus.Active)
+                    await UpdateAdvertAsActive(ctx, record);
+                else
+                    await DeleteAdvert(ctx, record);
             }
         }
 
@@ -58,6 +57,15 @@ namespace AdvertApi.Services
         {
             record.Status = AdvertStatus.Active;
             await ctx.SaveAsync(record);
+        }
+
+        public async Task<bool> CheckHealthAsync()
+        {
+            using (var ctx = new DynamoDBContext(_client))
+            {
+                var tableData = await _client.DescribeTableAsync("Adverts");
+                return string.Compare(tableData.Table.TableStatus, "active", true) == 0;
+            }
         }
     }
 }
