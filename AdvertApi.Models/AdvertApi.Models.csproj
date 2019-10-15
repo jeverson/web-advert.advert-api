@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
+    <PackageId>AdvertApi.Models.JM</PackageId>
   </PropertyGroup>
 
 </Project>

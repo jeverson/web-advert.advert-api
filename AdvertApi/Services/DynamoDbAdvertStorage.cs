@@ -67,5 +67,17 @@ namespace AdvertApi.Services
                 return string.Compare(tableData.Table.TableStatus, "active", true) == 0;
             }
         }
+
+        public async Task<AdvertDbModel> GetById(string id)
+        {
+            using (var ctx = new DynamoDBContext(_client))
+            {
+                var record = await ctx.LoadAsync<AdvertDbModel>(id);
+                if (record == null)
+                    throw new KeyNotFoundException($"A record with Id={id} was not found.");
+
+                return record;
+            }
+        }
     }
 }
