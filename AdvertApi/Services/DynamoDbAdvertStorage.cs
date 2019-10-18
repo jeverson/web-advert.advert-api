@@ -22,13 +22,12 @@ namespace AdvertApi.Services
         public async Task<string> Add(AdvertModel model)
         {
             var dbModel = _mapper.Map<AdvertDbModel>(model);
-            dbModel.Id = new Guid().ToString();
+            dbModel.Id = Guid.NewGuid().ToString();
             dbModel.CreationDateTime = DateTime.UtcNow;
             dbModel.Status = AdvertStatus.Pending;
 
-            using (var client = new AmazonDynamoDBClient())
-                using (var ctx = new DynamoDBContext(client))
-                    await ctx.SaveAsync(dbModel);
+            using (var ctx = new DynamoDBContext(_client))
+                await ctx.SaveAsync(dbModel);
 
             return dbModel.Id;
         }

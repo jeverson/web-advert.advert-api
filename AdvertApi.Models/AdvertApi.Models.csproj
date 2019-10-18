@@ -1,8 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
     <PackageId>AdvertApi.Models.JM</PackageId>
+    <Version>1.0.1</Version>
   </PropertyGroup>
 
 </Project>
