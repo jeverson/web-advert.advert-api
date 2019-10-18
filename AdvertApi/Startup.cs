@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Amazon.SimpleNotificationService;
 
 namespace AdvertApi
 {
@@ -25,8 +26,11 @@ namespace AdvertApi
             services.AddControllers();
             services.AddAutoMapper(typeof(Startup));
 
+            services.AddDefaultAWSOptions(Configuration.GetAWSOptions());
             services.AddAWSService<IAmazonDynamoDB>();
+            services.AddAWSService<IAmazonSimpleNotificationService>();
             services.AddTransient<IAdvertStorageService, DynamoDbAdvertStorage>();
+
             services.AddHealthChecks()
                 .AddCheck<StorageHealthCheck>("storage-health-check");
         }

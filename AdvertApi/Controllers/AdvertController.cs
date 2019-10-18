@@ -17,11 +17,13 @@ namespace AdvertApi.Controllers
     {
         private readonly IAdvertStorageService _advertStorageService;
         private readonly IConfiguration _configuration;
+        private readonly IAmazonSimpleNotificationService _notificationService;
 
-        public AdvertController(IAdvertStorageService advertStorageService, IConfiguration configuration)
+        public AdvertController(IAdvertStorageService advertStorageService, IConfiguration configuration, IAmazonSimpleNotificationService notificationService)
         {
             _advertStorageService = advertStorageService;
             _configuration = configuration;
+            _notificationService = notificationService;
         }
 
         [HttpPost]
@@ -68,12 +70,9 @@ namespace AdvertApi.Controllers
             var topicArn = _configuration.GetValue<string>("TopicArn");
             var dbModel = await _advertStorageService.GetById(model.Id);
 
-            using (var client = new AmazonSimpleNotificationServiceClient())
-            {
-                var message = new AdvertConfirmedMessage { Id = model.Id, Title = dbModel.Title };
-                var messageJson = JsonConvert.SerializeObject(message);
-                await client.PublishAsync(topicArn, messageJson);
-            }
+            var message = new AdvertConfirmedMessage { Id = model.Id, Title = dbModel.Title };
+            var messageJson = JsonConvert.SerializeObject(message);
+            await _notificationService.PublishAsync(topicArn, messageJson);
         }
     }
 }
